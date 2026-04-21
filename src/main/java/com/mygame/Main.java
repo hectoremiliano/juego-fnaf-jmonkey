@@ -1,78 +1,137 @@
 package com.mygame;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.ui.Picture;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.ColorRGBA;
-
-import com.mygame.managers.*;
+import com.jme3.system.AppSettings;
+import com.jme3.ui.Picture;
 import com.mygame.animatronics.*;
+import com.mygame.managers.*;
 
 public class Main extends SimpleApplication {
 
-    GameManager gameManager = new GameManager();
-    EnergyManager energyManager = new EnergyManager();
-    CameraManager cameraManager = new CameraManager();
+    private GameManager gameManager;
+    private EnergyManager energyManager;
+    private TimeManager timeManager;
+    private AnimatronicManager animatronicManager;
 
-    Stalker stalker = new Stalker();
-    Runner runner = new Runner();
-    Phantom phantom = new Phantom();
-    Watcher watcher = new Watcher();
+    private Watcher watcher;
+    private Stalker stalker;
+    private Runner runner;
+    private Phantom phantom;
 
     public static void main(String[] args) {
         Main app = new Main();
+        AppSettings settings = new AppSettings(true);
+        settings.setTitle("Five Nights at My Game - Hector Edition");
+        settings.setResolution(1280, 720);
+        app.setSettings(settings);
+        app.setShowSettings(false); 
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        System.out.println("Juego iniciado");
-
-        // Fondo negro detrás de la imagen
+        // Bloquear cámara 3D para que sea un juego 2D/Clicker
+        flyCam.setEnabled(false);
         viewPort.setBackgroundColor(ColorRGBA.Black);
 
-        // Mostrar imagen de fondo
-        mostrarFondo();
+        // 1. Inicializar Managers
+        gameManager = new GameManager(this);
+        energyManager = new EnergyManager();
+        timeManager = new TimeManager(gameManager);
+        animatronicManager = new AnimatronicManager(gameManager);
+
+        // 2. Inicializar Animatrónicos
+        watcher = new Watcher();
+        stalker = new Stalker();
+        runner = new Runner();
+        phantom = new Phantom();
+
+        // 3. Configurar Visuales 
+        // CORRECCIÓN: Nombres de archivos estándar. Si tus archivos se llaman distinto, cámbialos aquí.
+        mostrarFondoOficina();
+        
+        try {
+            watcher.setupVisual(this, "Textures/watcher.png");
+            stalker.setupVisual(this, "Textures/stalker.png");
+            runner.setupVisual(this, "Textures/runner.png");
+            phantom.setupVisual(this, "Textures/phantom.png");
+        } catch (Exception e) {
+            System.err.println("¡ERROR! No se encontró una imagen en assets/Textures: " + e.getMessage());
+        }
+
+        // 4. Adjuntar Estados
+        stateManager.attach(timeManager);
+        stateManager.attach(animatronicManager);
+
+        // 5. Configurar Controles de teclado
+        initKeys();
+
+        // Iniciar la noche
+        timeManager.startNight(1);
+        System.out.println("--- NOCHE 1 INICIADA ---");
     }
 
-    private void mostrarFondo() {
+    private void initKeys() {
+        // Tecla Espacio para abrir/cerrar cámaras
+        inputManager.addMapping("ToggleCam", new KeyTrigger(KeyInput.KEY_SPACE));
+        // Teclas 1 y 2 para cambiar de cámara
+        inputManager.addMapping("Cam1", new KeyTrigger(KeyInput.KEY_1));
+        inputManager.addMapping("Cam2", new KeyTrigger(KeyInput.KEY_2));
+        // Tecla L para la luz
+        inputManager.addMapping("Light", new KeyTrigger(KeyInput.KEY_L));
 
-        Picture fondo = new Picture("Fondo");
+        inputManager.addListener(actionListener, "ToggleCam", "Cam1", "Cam2", "Light");
+    }
 
-        // Ruta de tu imagen
+    private final ActionListener actionListener = new ActionListener() {
+        @Override
+        public void onAction(String name, boolean isPressed, float tpf) {
+            if (isPressed && !gameManager.isGameOver()) {
+                if (name.equals("ToggleCam")) {
+                    gameManager.setLookingAtCameras(!gameManager.isPlayerLookingAtCameras());
+                    System.out.println("\nMonitor: " + (gameManager.isPlayerLookingAtCameras() ? "ABIERTO" : "CERRADO"));
+                }
+                if (name.equals("Cam1")) gameManager.setCurrentCameraID(1);
+                if (name.equals("Cam2")) gameManager.setCurrentCameraID(2);
+                if (name.equals("Light")) gameManager.setLightOn(!gameManager.isDeskLightShiningOnBooth());
+            }
+        }
+    };
+
+    private void mostrarFondoOficina() {
+        Picture fondo = new Picture("FondoOficina");
         fondo.setImage(assetManager, "Textures/fondo.png", true);
-
         fondo.setWidth(settings.getWidth());
         fondo.setHeight(settings.getHeight());
-
         fondo.setPosition(0, 0);
-
         guiNode.attachChild(fondo);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-
         if (gameManager.isGameOver()) return;
 
-        gameManager.update(tpf);
+        // Actualizar Energía
+        energyManager.update(tpf, 
+            gameManager.isPlayerLookingAtCameras(), 
+            gameManager.isVentClosedState(), 
+            gameManager.isDeskLightShiningOnBooth(), 
+            false, false);
 
-        boolean usandoCamaras = cameraManager.isActive();
+        // Derrota por energía
+        if (energyManager.getEnergia() <= 0) {
+            gameManager.triggerJumpscare("Blackout (Sin Energía)");
+            guiNode.detachAllChildren(); // Pantalla negra
+        }
 
-        energyManager.update(tpf, usandoCamaras, false, false, false, false);
-
+        // Actualizar visuales de animatrónicos (Esto los hace aparecer/desaparecer)
+        watcher.update(tpf, gameManager);
         stalker.update(tpf, gameManager);
         runner.update(tpf, gameManager);
         phantom.update(tpf, gameManager);
-        watcher.update(tpf, gameManager);
-
-        System.out.println("Energia: " + energyManager.getEnergia());
-
-        if (energyManager.getEnergia() <= 0) {
-            gameManager.endGame("Sin energía");
-        }
-
-        if (stalker.getPosicion() == cameraManager.getCamera()) {
-            gameManager.endGame("El Stalker te atrapó");
-        }
     }
 }

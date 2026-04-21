@@ -2,22 +2,28 @@ package com.mygame.managers;
 
 public class CameraManager {
 
-    private int currentCamera = 0;
     private boolean active = false;
+    private int currentCameraId = 1; // 1 = Pasillo, 2 = Ventilación, etc.
 
-    public void toggleCamera() {
-        active = !active;
+    public void update(float tpf) {
+        // Lógica de transición de cámaras
     }
 
-    public void changeCamera(int cam) {
-        currentCamera = cam;
-    }
-
-    public int getCamera() {
-        return currentCamera;
-    }
-
+    // --- MÉTODOS PARA EL MAIN ---
     public boolean isActive() {
         return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public int getCurrentCameraId() {
+        return currentCameraId;
+    }
+
+    public void setCamera(int id) {
+        this.currentCameraId = id;
+        System.out.println("Cámara actual: " + id);
     }
 }
