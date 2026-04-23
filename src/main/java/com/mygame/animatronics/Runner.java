@@ -1,44 +1,52 @@
 package com.mygame.animatronics;
 
 import com.mygame.managers.GameManager;
+import java.util.Arrays;
 
-/**
- * Runner ataca desde la puerta izquierda.
- * Está parado ahí por 5 segundos. Si en ese tiempo no miras las cámaras, te matará.
- */
 public class Runner extends Animatronic {
-
-    public Runner() { super(0); }
+    
+    public Runner() {
+        super("Runner", 2, 7.3f);
+    }
 
     @Override
-    public void reset() {
-        this.currentPosition = 0;
-        this.stateTimer = 0;
-        this.isActiveAttackState = false;
+    protected void initializePath() {
+        path = Arrays.asList(
+            "0", "1", "2", "3", "4", "Door", "Jumpscare"
+        );
+    }
+
+    @Override
+    protected String getStartPosition() {
+        return "0";
+    }
+
+    @Override
+    protected String getDoorSide() {
+        return "rightDoor";
+    }
+
+    @Override
+    protected void playLaughSound() {
+        // Runner no se ríe
+    }
+
+    @Override
+    protected int getRandomMax() {
+        return 22;
     }
 
     @Override
     protected void initiateAttackState(GameManager game) {
-        this.currentPosition = 2; // Posición de la puerta
-        this.stateTimer = 0;
-        this.isActiveAttackState = true;
-        System.out.println("⚠️ Runner está en la puerta izquierda. ¡Revisa las cámaras!");
+        System.out.println("⚠️ Runner está atacando!");
+        isActiveAttackState = true;
+        stateTimer = 0;
     }
 
     @Override
     protected void handleAttackState(GameManager game) {
-        // La condición de derrota de Runner es terminal. Si el temporizador llega a 5s, verifica.
-        if (stateTimer >= 5.0f) {
-            // Al final del contador, ¿está el jugador mirando las cámaras?
-            if (game.isPlayerLookingAtCameras()) {
-                System.out.println("🛑 Runner se aburrió porque estabas ocupado con las cámaras y retrocedió.");
-                reset(); // Fue evadido
-            } else {
-                game.triggerJumpscare(getKillerName());
-            }
+        if (stateTimer >= 1.8f) {
+            game.triggerJumpscare("Runner");
         }
     }
-
-    @Override
-    protected String getKillerName() { return "Runner"; }
 }

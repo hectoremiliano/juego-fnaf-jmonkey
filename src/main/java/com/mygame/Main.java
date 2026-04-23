@@ -34,24 +34,19 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        // Bloquear cámara 3D para que sea un juego 2D/Clicker
         flyCam.setEnabled(false);
         viewPort.setBackgroundColor(ColorRGBA.Black);
 
-        // 1. Inicializar Managers
         gameManager = new GameManager(this);
         energyManager = new EnergyManager();
         timeManager = new TimeManager(gameManager);
         animatronicManager = new AnimatronicManager(gameManager);
 
-        // 2. Inicializar Animatrónicos
         watcher = new Watcher();
         stalker = new Stalker();
         runner = new Runner();
         phantom = new Phantom();
 
-        // 3. Configurar Visuales 
-        // CORRECCIÓN: Nombres de archivos estándar. Si tus archivos se llaman distinto, cámbialos aquí.
         mostrarFondoOficina();
         
         try {
@@ -63,25 +58,22 @@ public class Main extends SimpleApplication {
             System.err.println("¡ERROR! No se encontró una imagen en assets/Textures: " + e.getMessage());
         }
 
-        // 4. Adjuntar Estados
         stateManager.attach(timeManager);
         stateManager.attach(animatronicManager);
 
-        // 5. Configurar Controles de teclado
         initKeys();
 
-        // Iniciar la noche
         timeManager.startNight(1);
         System.out.println("--- NOCHE 1 INICIADA ---");
     }
 
     private void initKeys() {
-        // Tecla Espacio para abrir/cerrar cámaras
+ 
         inputManager.addMapping("ToggleCam", new KeyTrigger(KeyInput.KEY_SPACE));
-        // Teclas 1 y 2 para cambiar de cámara
+  
         inputManager.addMapping("Cam1", new KeyTrigger(KeyInput.KEY_1));
         inputManager.addMapping("Cam2", new KeyTrigger(KeyInput.KEY_2));
-        // Tecla L para la luz
+
         inputManager.addMapping("Light", new KeyTrigger(KeyInput.KEY_L));
 
         inputManager.addListener(actionListener, "ToggleCam", "Cam1", "Cam2", "Light");
@@ -115,20 +107,16 @@ public class Main extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         if (gameManager.isGameOver()) return;
 
-        // Actualizar Energía
         energyManager.update(tpf, 
             gameManager.isPlayerLookingAtCameras(), 
             gameManager.isVentClosedState(), 
             gameManager.isDeskLightShiningOnBooth(), 
             false, false);
 
-        // Derrota por energía
         if (energyManager.getEnergia() <= 0) {
             gameManager.triggerJumpscare("Blackout (Sin Energía)");
-            guiNode.detachAllChildren(); // Pantalla negra
+            guiNode.detachAllChildren(); 
         }
-
-        // Actualizar visuales de animatrónicos (Esto los hace aparecer/desaparecer)
         watcher.update(tpf, gameManager);
         stalker.update(tpf, gameManager);
         runner.update(tpf, gameManager);

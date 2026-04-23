@@ -1,45 +1,58 @@
 package com.mygame.animatronics;
 
 import com.mygame.managers.GameManager;
+import java.util.Arrays;
 
-/**
- * Watcher ataca desde la ventilación (derecha).
- * Debes cerrar la ventilación en 5 segundos o te matará.
- */
 public class Watcher extends Animatronic {
-
-    public Watcher() { super(0); } // Agresión se establece por GameManager
+    
+    public Watcher() {
+        super("Watcher", 1, 10.0f);
+    }
 
     @Override
-    public void reset() {
-        this.currentPosition = 0;
-        this.stateTimer = 0;
-        this.isActiveAttackState = false;
+    protected void initializePath() {
+        path = Arrays.asList(
+            "0", "1", "2", "3", "4",
+            "5", "6", "7", "Door", "Jumpscare"
+        );
+    }
+
+    @Override
+    protected String getStartPosition() {
+        return "0";
+    }
+
+    @Override
+    protected String getDoorSide() {
+        return "rightDoor";
+    }
+
+    @Override
+    public void playLaughSound() {  // Asegúrate que sea PUBLIC
+        System.out.println("🔊 Risas de Watcher!");
+    }
+
+    @Override
+    protected boolean shouldAdvanceFirstStep() {
+        return true;
+    }
+
+    @Override
+    protected boolean shouldPlayLaugh() {
+        return true;
     }
 
     @Override
     protected void initiateAttackState(GameManager game) {
-        this.currentPosition = 5; // Posición de ventilación
-        this.stateTimer = 0;
-        this.isActiveAttackState = true;
-        System.out.println("⚠️ Watcher ha entrado en la ventilación. ¡Ciérrala!");
+        System.out.println("⚠️ Watcher está atacando!");
+        isActiveAttackState = true;
+        stateTimer = 0;
     }
 
     @Override
     protected void handleAttackState(GameManager game) {
-        // ¿Cerró el jugador la ventilación en tiempo?
-        if (game.isVentClosedState()) {
-            System.out.println("🛑 Watcher fue bloqueado por la ventilación y retrocedió.");
-            reset(); // Volver a inactivo
-            return;
-        }
-
-        // ¿Se acabó el tiempo?
-        if (stateTimer >= 5.0f) {
-            game.triggerJumpscare(getKillerName());
+        if (stateTimer >= 2.0f) {
+            game.triggerJumpscare("Watcher");
         }
     }
-
-    @Override
-    protected String getKillerName() { return "Watcher"; }
 }
