@@ -2,6 +2,8 @@ package com.mygame.managers;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AppStateManager;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameManager {
     
@@ -10,18 +12,16 @@ public class GameManager {
     private TimeManager timeManager;
     private AnimatronicManager animatronicManager;
     
-    // Estados del juego
     private boolean isGameOver = false;
     private boolean isBlackout = false;
     private boolean isAnimatronicMoving = false;
     private boolean isLookingAtCameras = false;
     private int currentCameraID = -1;
+    private String currentCameraId = "Stage"; // Nueva variable para el ID de cámara como String
     
-    // Estados de puertas (true = abierta, false = cerrada)
     private boolean isLeftDoorOpen = true;
     private boolean isRightDoorOpen = true;
-    
-    // Estados adicionales para la luz y ventilación
+
     private boolean isLightOn = true;
     private boolean isVentClosed = false;
     private boolean isDeskLightShiningOnBooth = false;
@@ -40,8 +40,6 @@ public class GameManager {
         stateManager.attach(animatronicManager);
     }
     
-    // ========== MÉTODOS PARA ANIMATRONIC ==========
-    
     public boolean isAnimatronicMoving() { 
         return isAnimatronicMoving; 
     }
@@ -57,8 +55,6 @@ public class GameManager {
     public void onAnimatronicFailed(String name) {
         System.out.println("✅ " + name + " fue detenido exitosamente en la puerta");
     }
-    
-    // ========== MÉTODOS PARA PUERTAS ==========
     
     public boolean isDoorOpen(String door) {
         if (door.equals("leftDoor")) {
@@ -79,8 +75,6 @@ public class GameManager {
         System.out.println("🚪 Puerta derecha " + (open ? "abierta" : "cerrada"));
     }
     
-    // ========== MÉTODOS PARA CÁMARAS ==========
-    
     public boolean isPlayerLookingAtCameras() {
         return isLookingAtCameras;
     }
@@ -95,10 +89,51 @@ public class GameManager {
     
     public void setCurrentCameraID(int cameraID) {
         this.currentCameraID = cameraID;
-        System.out.println("📷 Cámara cambiada a: " + cameraID);
+        System.out.println("📷 Cámara cambiada a ID: " + cameraID);
     }
     
-    // ========== MÉTODOS PARA LUZ Y VENTILACIÓN ==========
+    /**
+     * Establece el ID de la cámara actual como String
+     * @param cameraId Nombre/ID de la cámara (ej: "Stage", "Hall", "Office")
+     */
+    public void setCurrentCameraId(String cameraId) {
+        this.currentCameraId = cameraId;
+        System.out.println("📷 Cámara cambiada a: " + cameraId);
+        
+        // También mantener compatibilidad con el ID numérico si es necesario
+        // Convertir el String a ID numérico si tienes un mapeo
+        this.currentCameraID = mapCameraStringToId(cameraId);
+    }
+    
+    /**
+     * Obtiene el ID de la cámara actual como String
+     * @return Nombre/ID de la cámara actual
+     */
+    public String getCurrentCameraId() {
+        return currentCameraId;
+    }
+    
+    /**
+     * Mapea el nombre de la cámara a un ID numérico
+     * @param cameraString Nombre de la cámara
+     * @return ID numérico de la cámara
+     */
+    private int mapCameraStringToId(String cameraString) {
+        Map<String, Integer> cameraMap = new HashMap<>();
+        cameraMap.put("Stage", 0);
+        cameraMap.put("Dinning Area", 1);
+        cameraMap.put("Restrooms", 2);
+        cameraMap.put("Hall", 3);
+        cameraMap.put("Kitchen", 4);
+        cameraMap.put("East Hall", 5);
+        cameraMap.put("East Corner", 6);
+        cameraMap.put("Office", 7);
+        cameraMap.put("West Hall", 8);
+        cameraMap.put("West Corner", 9);
+        cameraMap.put("Pirate Cove", 10);
+        
+        return cameraMap.getOrDefault(cameraString, -1);
+    }
     
     public boolean isLightOn() {
         return isLightOn;
@@ -126,12 +161,9 @@ public class GameManager {
         this.isDeskLightShiningOnBooth = shining;
     }
     
-    // Método para compatibilidad con Main.java
     public boolean isVentClosedState() {
         return isVentClosed;
     }
-    
-    // ========== MÉTODOS DE ESTADO DEL JUEGO ==========
     
     public boolean isGameOver() { 
         return isGameOver; 
@@ -161,8 +193,6 @@ public class GameManager {
         }
         System.out.println("💡 Blackout: " + (blackout ? "ACTIVADO" : "DESACTIVADO"));
     }
-    
-    // ========== MÉTODOS DE JUEGO ==========
     
     public void startNight(int nightNumber) {
         isGameOver = false;
@@ -197,7 +227,6 @@ public class GameManager {
     public void onHourChanged(int newHour) {
         System.out.println("🕐 Ha llegado la hora: " + newHour + " AM");
         
-        // Efectos especiales por hora
         switch (newHour) {
             case 2:
                 System.out.println("🎭 Los animatrónicos se vuelven más agresivos...");
@@ -214,8 +243,6 @@ public class GameManager {
         }
     }
     
-    // ========== GETTERS ==========
-    
     public SimpleApplication getApp() { 
         return app; 
     }
@@ -228,8 +255,6 @@ public class GameManager {
         return animatronicManager; 
     }
     
-    // ========== MÉTODOS PARA PRUEBAS ==========
-    
     public void resetGame() {
         isGameOver = false;
         isBlackout = false;
@@ -237,6 +262,7 @@ public class GameManager {
         isLeftDoorOpen = true;
         isRightDoorOpen = true;
         currentCameraID = -1;
+        currentCameraId = "Stage"; // Resetear el ID de cámara como String
         isLookingAtCameras = false;
         isLightOn = true;
         isVentClosed = false;

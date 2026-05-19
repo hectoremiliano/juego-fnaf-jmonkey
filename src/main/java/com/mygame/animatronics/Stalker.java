@@ -4,21 +4,27 @@ import com.mygame.managers.GameManager;
 import java.util.Arrays;
 
 public class Stalker extends Animatronic {
-    
+
     public Stalker() {
         super("Stalker", 1, 5.0f);
     }
 
     @Override
     protected void initializePath() {
+
         path = Arrays.asList(
-            "0", "1", "2", "3", "Door", "Jumpscare"
+            "2",
+            "1",
+            "2",
+            "1",
+            "Door",
+            "Jumpscare"
         );
     }
 
     @Override
     protected String getStartPosition() {
-        return "0";
+        return "2";
     }
 
     @Override
@@ -27,25 +33,25 @@ public class Stalker extends Animatronic {
     }
 
     @Override
-    protected void playLaughSound() {
-        // Stalker no se ríe
-    }
-
-    @Override
-    protected int getRandomMax() {
-        return 22;
+    public void playLaughSound() {
+        System.out.println("🔊 Sonido de Stalker!");
     }
 
     @Override
     protected void initiateAttackState(GameManager game) {
+
         System.out.println("⚠️ Stalker está atacando!");
+
         isActiveAttackState = true;
+
         stateTimer = 0;
     }
 
     @Override
     protected void handleAttackState(GameManager game) {
-        if (stateTimer >= 1.5f) {
+
+        if (stateTimer >= 2.0f) {
+
             game.triggerJumpscare("Stalker");
         }
     }

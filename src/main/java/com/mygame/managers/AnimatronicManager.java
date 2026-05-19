@@ -10,10 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Gestiona la lista de animatrónicos y sus niveles de agresión.
- * Adaptado del código React original con la lógica de movimiento y comportamiento.
- */
 public class AnimatronicManager extends AbstractAppState {
 
     private final GameManager game;

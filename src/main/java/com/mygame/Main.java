@@ -50,10 +50,10 @@ public class Main extends SimpleApplication {
         mostrarFondoOficina();
         
         try {
-            watcher.setupVisual(this, "Textures/watcher.png");
-            stalker.setupVisual(this, "Textures/stalker.png");
-            runner.setupVisual(this, "Textures/runner.png");
-            phantom.setupVisual(this, "Textures/phantom.png");
+         watcher.setupVisual(this, "Textures/watcher_pose.png");
+         stalker.setupVisual(this, "Textures/stalker_pose.png");
+         runner.setupVisual(this, "Textures/runner_pose.png");
+         phantom.setupVisual(this, "Textures/phantom_pose.png");
         } catch (Exception e) {
             System.err.println("¡ERROR! No se encontró una imagen en assets/Textures: " + e.getMessage());
         }
